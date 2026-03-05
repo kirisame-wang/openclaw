@@ -36,6 +36,7 @@ import {
   normalizeAllowFrom,
   normalizeDmAllowFromWithStore,
 } from "./bot-access.js";
+import { resolveAgentRoute } from "../routing/resolve-route.js";
 import {
   getLineSourceInfo,
   buildLineMessageContext,
@@ -469,7 +470,14 @@ async function handleMessageEvent(event: MessageEvent, context: LineHandlerConte
     const groupConfig = resolveLineGroupConfig({ config: account.config, groupId, roomId });
     const requireMention = groupConfig?.requireMention !== false;
     const rawText = message.type === "text" ? message.text : "";
-    const mentionRegexes = buildMentionRegexes(cfg);
+    const peerId = groupId ?? roomId ?? event.source.userId ?? "unknown";
+    const { agentId } = resolveAgentRoute({
+      cfg,
+      channel: "line",
+      accountId: account.accountId,
+      peer: { kind: "group", id: peerId },
+    });
+    const mentionRegexes = buildMentionRegexes(cfg, agentId);
     const wasMentionedByNative = isLineBotMentioned(message);
     const wasMentionedByPattern =
       message.type === "text" ? matchesMentionPatterns(rawText, mentionRegexes) : false;
