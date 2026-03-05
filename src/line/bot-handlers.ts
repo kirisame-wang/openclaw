@@ -30,6 +30,7 @@ import {
   readChannelAllowFromStore,
   upsertChannelPairingRequest,
 } from "../pairing/pairing-store.js";
+import { resolveAgentRoute } from "../routing/resolve-route.js";
 import type { RuntimeEnv } from "../runtime.js";
 import {
   firstDefined,
@@ -38,7 +39,6 @@ import {
   normalizeDmAllowFromWithStore,
   type NormalizedAllowFrom,
 } from "./bot-access.js";
-import { resolveAgentRoute } from "../routing/resolve-route.js";
 import {
   getLineSourceInfo,
   buildLineMessageContext,
@@ -407,13 +407,11 @@ async function shouldProcessLineEvent(
   };
 }
 
-/**
- * Detect whether the bot was @mentioned in a LINE text message.
+/** Extract the mentionees array from a LINE text message (SDK types omit it).
  * LINE webhook payloads include `mention.mentionees` on text messages with
  * `isSelf: true` for the bot and `type: "all"` for @All mentions.
  * The `@line/bot-sdk` types don't expose these fields, so we use a type assertion.
  */
-/** Extract the mentionees array from a LINE text message (SDK types omit it). */
 function getLineMentionees(
   message: MessageEvent["message"],
 ): Array<{ type?: string; isSelf?: boolean }> {
